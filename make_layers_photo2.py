@@ -218,8 +218,14 @@ msp = doc.modelspace()
 NAMES = {1: "A_YELLOW", 2: "A_ORANGE", 3: "A_GREEN", 4: "A_CYAN", 5: "A_BLUE", 6: "A_MAGENTA",
          7: "A_RED", 8: "A_WHITE", 21: "B_TOPMETAL", 22: "B_GUARD_RING", 23: "B_DIODE",
          24: "B_PAD", 25: "B_BLOCK"}
+# AutoCAD colour index per layer. A_* follow the photo's hue class (yellow, orange, ...);
+# B_* have no hue class in the photo, so they get distinct picks. Every layer gets its own colour
+# so the DWG shows the layers separately; without color= they all end up as ACI 7.
+LAYER_COLOR = {"A_YELLOW": 2, "A_ORANGE": 30, "A_GREEN": 3, "A_CYAN": 4, "A_BLUE": 5,
+               "A_MAGENTA": 6, "A_RED": 1, "A_WHITE": 7,
+               "B_TOPMETAL": 140, "B_GUARD_RING": 60, "B_DIODE": 200, "B_PAD": 100, "B_BLOCK": 221}
 for nm in NAMES.values():
-    doc.layers.add(nm)
+    doc.layers.add(nm, color=LAYER_COLOR[nm])
 for c in lib.cells:
     dx = 60.0 if c.name == "SENSOR_B" else 0.0
     for poly in c.polygons:
