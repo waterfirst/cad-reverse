@@ -1,0 +1,13 @@
+{
+  "_comment": "Per-image settings for make_layers_photo2.py. Copy this file for a new image and edit the values. Pixel boxes are x0, y0, x1, y1 in photo pixels. Omitted manual_* keys mean no hand-traced shapes.",
+  "a_box": [88, 66, 616, 610],
+  "b_box": [672, 66, 1176, 610],
+  "panel_a_width_um": 45.0,
+  "manual_ring": [
+    [[678, 91, 928, 599], [690, 103, 916, 587]],
+    [[935, 390, 1169, 599], [947, 402, 1157, 587]]
+  ],
+  "manual_rect_guard": [[928, 148, 1175, 189]],
+  "manual_pad": [[798, 326, 814, 343]],
+  "manual_block": [[1025, 444, 1139, 558]]
+}

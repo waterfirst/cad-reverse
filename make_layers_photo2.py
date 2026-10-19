@@ -4,6 +4,7 @@
 # Scale: panel a width = 45 um (from the "45um" bracket); panel b uses the same um/px (assumption).
 # Approximate. Not a foundry layout, not DRC-checked.
 import colorsys
+import json
 import sys
 import numpy as np
 import gdstk
@@ -13,6 +14,8 @@ from scipy import ndimage
 
 SRC = sys.argv[1]
 OUT = sys.argv[2]  # output prefix
+CONFIG = sys.argv[3] if len(sys.argv) > 3 else None  # per-image settings file (see examples/photo2.json)
+cfg = json.load(open(CONFIG, encoding="utf-8")) if CONFIG else {}
 im = Image.open(SRC).convert("RGB")
 arr = np.asarray(im).astype(float) / 255.0
 H, W, _ = arr.shape
@@ -27,9 +30,11 @@ hg = (b - r) / d + 2
 hb = (r - g) / d + 4
 hue = np.where(v == r, hr, np.where(v == g, hg, hb)) * 60 % 360
 
-A_BOX = (88, 66, 616, 610)     # x0, y0, x1, y1 of panel a in photo px (panel a incl. its black frame)
-B_BOX = (672, 66, 1176, 610)   # panel b
-UM_PER_PX = 45.0 / (A_BOX[2] - A_BOX[0])
+# Defaults are the example photo's values; a config file overrides them for another image.
+A_BOX = tuple(cfg.get("a_box", (88, 66, 616, 610)))  # x0, y0, x1, y1 of panel a in photo px (panel a incl. its black frame)
+B_BOX = tuple(cfg.get("b_box", (672, 66, 1176, 610)))  # panel b
+PANEL_A_UM = float(cfg.get("panel_a_width_um", 45.0))
+UM_PER_PX = PANEL_A_UM / (A_BOX[2] - A_BOX[0])
 
 
 def crop_mask(mask, box):
@@ -129,6 +134,11 @@ MANUAL_RING = [(left_o, left_i), (br_o, br_i)]
 MANUAL_RECT_GUARD = [(928, 148, 1175, 189)]          # top-right horizontal band
 MANUAL_PAD = [(798, 326, 814, 343)]                  # small square in topmetal sensor
 MANUAL_BLOCK = [(1025, 444, 1139, 558)]              # inner square in bottom-right block
+if CONFIG:  # with a config file, the example's hand-traced shapes are replaced; omitted keys stay empty
+    MANUAL_RING = [(tuple(o), tuple(i)) for o, i in cfg.get("manual_ring", [])]
+    MANUAL_RECT_GUARD = [tuple(rr) for rr in cfg.get("manual_rect_guard", [])]
+    MANUAL_PAD = [tuple(rr) for rr in cfg.get("manual_pad", [])]
+    MANUAL_BLOCK = [tuple(rr) for rr in cfg.get("manual_block", [])]
 
 # ---------- GDS ----------
 lib = gdstk.Library(name="PHOTO2", unit=1e-6, precision=1e-9)
@@ -187,7 +197,7 @@ for c in lib.cells:
         counts[poly.layer] = counts.get(poly.layer, 0) + 1
 with open(f"{OUT}_gds_map.txt", "w") as f:
     f.write("GDS cells: PIXEL_A = panel a (colour-class rectangles), SENSOR_B = panel b (sensor structure)\n")
-    f.write("Units: um. Panel width = 45 um. Panel b uses the same um/px as panel a (assumption).\n")
+    f.write(f"Units: um. Panel width = {PANEL_A_UM:g} um. Panel b uses the same um/px as panel a (assumption).\n")
     f.write("GDS layer numbers (datatype 0) -> names:\n")
     for no in sorted(spec):
         f.write(f"  {no:>2}: {spec[no]}  ({counts.get(no, 0)} shapes)\n")

@@ -37,8 +37,8 @@
 ## 실행
 
 ```bash
-# 1) 도면 이미지 분해 (입력은 두 패널짜리 PNG)
-python make_layers_photo2.py my_figure.png out/my_figure
+# 1) 도면 이미지 분해 (입력은 두 패널짜리 PNG, 설정 파일은 선택)
+python make_layers_photo2.py my_figure.png out/my_figure my_figure.json
 
 # 2) DXF → DWG
 ODA_CONVERTER=/path/to/ODAFileConverter ./dxf_to_dwg.sh out/my_figure.dxf out/dwg
@@ -49,10 +49,35 @@ python render_photo2_by_layer.py out/my_figure.gds out/my_figure_by_layer.png
 
 `ODAFileConverter`가 PATH에 있으면 `ODA_CONVERTER`는 생략해도 된다.
 
+### Windows (PowerShell)
+
+```powershell
+# 1) 패키지 설치 (Python 3.10 이상)
+py -m venv .venv; .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# 2) 도면 이미지 분해 (Linux와 같은 명령, 설정 파일은 선택)
+python make_layers_photo2.py my_figure.png out\my_figure my_figure.json
+
+# 3) DXF → DWG (ODA 경로를 지정하고 실행)
+$env:ODA_CONVERTER = "C:\Program Files\ODA\ODAFileConverter\ODAFileConverter.exe"
+.\dxf_to_dwg.ps1 -InputDxf out\my_figure.dxf -OutputDir out\dwg
+
+# 4) 레이어별 미리보기
+python render_photo2_by_layer.py out\my_figure.gds out\my_figure_by_layer.png
+```
+
+- `dxf_to_dwg.ps1`은 Linux용 `dxf_to_dwg.sh`와 같은 ODA 인자(ACAD2018, DWG)를 쓴다. 변환 뒤 DWG 파일이 실제로 생겼는지 확인한다.
+- ODA File Converter Windows 버전을 따로 설치해야 한다. 기본 경로에 없으면 `ODA_CONVERTER`로 전체 경로를 준다.
+- 이 저장소의 Windows 스크립트는 Windows 실기에서 아직 실행해 보지 않았다.
+
 ## 다른 이미지에 쓸 때 주의
 
-- `make_layers_photo2.py`의 `A_BOX`, `B_BOX` 픽셀 좌표는 **예시 사진에 맞춰진 값**이다. 다른 이미지는 좌표를 새로 잡아야 한다. `_overlay_check.png`로 박스 위치를 먼저 확인한다.
-- 색 분류 기준(`classify_a`의 hue 구간)도 이미지마다 다를 수 있다.
+- **이미지마다 설정 파일을 하나씩 둔다.** `examples/photo2.json`을 복사해 `my_figure.json`을 만들고, 그 파일에서 값을 고친 뒤 세 번째 인자로 넘긴다. 설정 파일을 주지 않으면 예시 사진 값이 쓰인다.
+  - `a_box`, `b_box`: 패널 a, b의 픽셀 박스 `[x0, y0, x1, y1]`. `_overlay_check.png`로 위치를 먼저 확인한다.
+  - `panel_a_width_um`: 패널 a 폭(µm). 도면에 적힌 치수 표기에서 가져온다. 기본 45.
+  - `manual_ring`, `manual_rect_guard`, `manual_pad`, `manual_block`: 패널 b에서 색으로 잡히지 않는 구조를 손으로 그린 좌표. 설정 파일을 주면 이 항목은 예시 값이 아니라 파일 값만 쓰고, 없는 키는 비어 있는 것으로 본다.
+- 색 분류 기준(`classify_a`의 hue 구간)과 레이어 색(`LAYER_COLOR`)은 아직 설정 파일로 바꿀 수 없다. 이미지에 따라 바꿔야 하면 스크립트를 직접 고친다.
 - 사진 기반이라 치수는 참고용이다.
 
 ## 예시 파일 (`examples/`)
@@ -64,11 +89,13 @@ python render_photo2_by_layer.py out/my_figure.gds out/my_figure_by_layer.png
 | `photo2_layers_gds_map.txt` | GDS 레이어 번호와 이름 |
 | `photo2_layers_preview.png` | 전체 미리보기 |
 | `photo2_layers_by_layer.png` | 레이어별 미리보기 |
+| `photo2.json` | 예시 사진의 설정 파일 (새 이미지 설정의 출발점) |
 
 ## 파일
 
 - `make_layers_photo2.py` — 메인 분해 스크립트
-- `dxf_to_dwg.sh` — DXF → DWG 변환 래퍼
+- `dxf_to_dwg.sh` — DXF → DWG 변환 래퍼 (Linux)
+- `dxf_to_dwg.ps1` — DXF → DWG 변환 래퍼 (Windows, PowerShell)
 - `render_photo2_by_layer.py` — 레이어별 미리보기
 - `render_photo2_preview.py` — GDS 전체 미리보기
 - `requirements.txt` — 파이썬 의존성 (테스트에 쓴 버전으로 고정)
