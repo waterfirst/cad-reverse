@@ -1,0 +1,16 @@
+GDS cells: PIXEL_A = panel a (colour-class rectangles), SENSOR_B = panel b (sensor structure)
+Units: um. Panel width = 45 um. Panel b uses the same um/px as panel a (assumption).
+GDS layer numbers (datatype 0) -> names:
+   1: A YELLOW  (192 shapes)
+   2: A ORANGE  (304 shapes)
+   3: A GREEN  (75 shapes)
+   4: A CYAN  (3 shapes)
+   5: A BLUE  (45 shapes)
+   6: A MAGENTA  (98 shapes)
+   7: A RED  (482 shapes)
+   8: A WHITE  (602 shapes)
+  21: B TOPMETAL (sensor region)  (1 shapes)
+  22: B GUARD_RING (approx.)  (3 shapes)
+  23: B DIODE (circle)  (1 shapes)
+  24: B PAD (small square)  (1 shapes)
+  25: B BLOCK (inner square)  (1 shapes)

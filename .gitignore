@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+# ODA File Converter is downloaded separately from ODA; not kept in this repo
+oda_tmp/
+*_geom.pkl
